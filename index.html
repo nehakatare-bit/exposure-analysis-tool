@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Exposure Analysis Tool</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <h1>Exposure Analysis</h1>
+      <p class="subtitle">Risk &amp; Reserve Calculator</p>
+    </header>
+
+    <main class="content">
+      <!-- ── LEFT COLUMN: INPUTS ── -->
+      <section class="panel inputs-panel">
+
+        <!-- Processing Details -->
+        <div class="card">
+          <h2 class="card-title">Processing Details</h2>
+          <div class="form-grid">
+            <label>Company Legal Name
+              <input type="text" id="companyName" placeholder="Enter company name" />
+            </label>
+            <label>Annual Processing Volume (APV) USD
+              <input type="number" id="apv" placeholder="0" min="0" />
+            </label>
+            <label>Annual Net Revenue USD
+              <input type="number" id="netRevenue" placeholder="0" min="0" />
+            </label>
+            <label>High Transaction Value (HTV) USD
+              <input type="number" id="htv" placeholder="0" min="0" />
+            </label>
+            <label>Average Transaction Value (ATV) USD
+              <input type="number" id="atv" placeholder="0" min="0" />
+            </label>
+            <label>Refund Rate (%)
+              <input type="number" id="refundRate" placeholder="10" step="0.01" min="0" max="100" />
+            </label>
+            <label>Chargeback Rate (%)
+              <input type="number" id="chargebackRate" placeholder="0.5" step="0.001" min="0" max="100" />
+            </label>
+          </div>
+        </div>
+
+        <!-- MCC / Delivery -->
+        <div class="card">
+          <h2 class="card-title">MCC &amp; Delivery Timeframe</h2>
+          <p class="hint">Up to 20 MCC codes. Percentages of APV must sum to 100%.</p>
+          <div id="mccRows">
+            <!-- rows injected by JS -->
+          </div>
+          <button class="btn-secondary" id="addMccRow">+ Add MCC</button>
+          <div id="mccSumError" class="error-msg hidden">APV % must sum to exactly 100%</div>
+        </div>
+
+        <!-- Monthly Processing -->
+        <div class="card">
+          <h2 class="card-title">Monthly Processing Inputs (USD)</h2>
+          <p class="hint">Leave blank to distribute APV evenly across months.</p>
+          <div class="monthly-grid" id="monthlyGrid">
+            <!-- injected by JS -->
+          </div>
+          <div class="monthly-total-row">
+            <span>Total</span>
+            <span id="monthlyTotal">$0</span>
+          </div>
+        </div>
+
+        <!-- PayFac -->
+        <div class="card">
+          <h2 class="card-title">PayFac Inputs</h2>
+          <div class="toggle-row">
+            <label class="toggle-label">
+              <span>Payment Facilitator</span>
+              <label class="switch">
+                <input type="checkbox" id="payfacEnabled" />
+                <span class="slider"></span>
+              </label>
+            </label>
+          </div>
+          <div id="payfacFields" class="hidden">
+            <div class="form-grid">
+              <label>Sub-Merchant Concentration?
+                <select id="subMerchantConc">
+                  <option value="No">No</option>
+                  <option value="Yes">Yes</option>
+                </select>
+              </label>
+              <label>Sub-merchant Settlement Timeframe (days)
+                <input type="number" id="subSettleDays" placeholder="0" min="0" />
+              </label>
+              <label>Sub-merchant Avg Rolling Reserve Rate (%)
+                <input type="number" id="subRRRate" placeholder="0" step="0.1" min="0" />
+              </label>
+              <label>Sub-merchant Avg Rolling Reserve Timeframe (weeks)
+                <input type="number" id="subRRWeeks" placeholder="0" min="0" />
+              </label>
+              <label>Fixed Reserve Held from Sub-merchants (USD)
+                <input type="number" id="subFixedReserve" placeholder="0" min="0" />
+              </label>
+              <label>Discount Rate (%)
+                <input type="number" id="discountRate" placeholder="0" step="0.1" min="0" />
+              </label>
+            </div>
+
+            <h3 class="sub-title">Top 2 Sub-Merchants by Annual Processing Volume</h3>
+            <table class="sub-merchant-table">
+              <thead>
+                <tr><th>Merchant Name</th><th>Description</th><th>Annual Processing (USD)</th><th>Delivery Days</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><input type="text" id="sm1Name" placeholder="Merchant 1" /></td>
+                  <td><input type="text" id="sm1Desc" /></td>
+                  <td><input type="number" id="sm1Vol" placeholder="0" min="0" /></td>
+                  <td><input type="number" id="sm1Days" placeholder="0" min="0" /></td>
+                </tr>
+                <tr>
+                  <td><input type="text" id="sm2Name" placeholder="Merchant 2" /></td>
+                  <td><input type="text" id="sm2Desc" /></td>
+                  <td><input type="number" id="sm2Vol" placeholder="0" min="0" /></td>
+                  <td><input type="number" id="sm2Days" placeholder="0" min="0" /></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Reserve Config -->
+        <div class="card">
+          <h2 class="card-title">Reserve Configuration</h2>
+          <div class="form-grid">
+            <label>Exposure Coverage (%)
+              <input type="number" id="exposureCoverage" value="100" step="1" min="0" />
+            </label>
+            <label>Rolling Reserve Capture Timeframe (days)
+              <input type="number" id="rrCaptureDays" value="180" min="1" />
+            </label>
+          </div>
+          <h3 class="sub-title">Fixed Reserve Tranches</h3>
+          <table class="tranches-table">
+            <thead><tr><th>Tranche</th><th>% Split</th></tr></thead>
+            <tbody>
+              <tr><td>Tranche 1</td><td><input type="number" id="t1pct" placeholder="0" step="1" min="0" max="100" /></td></tr>
+              <tr><td>Tranche 2</td><td><input type="number" id="t2pct" placeholder="0" step="1" min="0" max="100" /></td></tr>
+              <tr><td>Tranche 3</td><td><input type="number" id="t3pct" placeholder="0" step="1" min="0" max="100" /></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <button class="btn-primary" id="calcBtn">Calculate Exposure</button>
+      </section>
+
+      <!-- ── RIGHT COLUMN: OUTPUTS ── -->
+      <section class="panel results-panel" id="resultsPanel">
+        <div class="results-placeholder" id="resultsPlaceholder">
+          <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="8" y="8" width="48" height="48" rx="4" stroke="#CBD5E1" stroke-width="2"/>
+            <path d="M20 32h24M20 24h16M20 40h20" stroke="#CBD5E1" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <p>Fill in the inputs and click <strong>Calculate Exposure</strong></p>
+        </div>
+
+        <div id="resultsContent" class="hidden">
+
+          <!-- Summary KPIs -->
+          <div class="kpi-row">
+            <div class="kpi">
+              <span class="kpi-label">Total Exposure</span>
+              <span class="kpi-value" id="kpiTotalExposure">—</span>
+            </div>
+            <div class="kpi">
+              <span class="kpi-label">NDX (Weighted Avg Days)</span>
+              <span class="kpi-value" id="kpiNdx">—</span>
+            </div>
+            <div class="kpi">
+              <span class="kpi-label">Break-Even Time</span>
+              <span class="kpi-value" id="kpiBet">—</span>
+            </div>
+            <div class="kpi">
+              <span class="kpi-label">Rolling Reserve %</span>
+              <span class="kpi-value" id="kpiRrPct">—</span>
+            </div>
+          </div>
+
+          <!-- Exposure Breakdown -->
+          <div class="result-card">
+            <h2 class="card-title">Exposure Breakdown</h2>
+            <table class="result-table">
+              <thead>
+                <tr><th>Component</th><th>Days</th><th>Rate</th><th>Exposure (USD)</th></tr>
+              </thead>
+              <tbody id="exposureTableBody"></tbody>
+              <tfoot id="exposureTableFoot"></tfoot>
+            </table>
+          </div>
+
+          <!-- Reserve Calculator -->
+          <div class="result-card">
+            <h2 class="card-title">Reserve Calculator</h2>
+            <div class="reserve-grid">
+              <div class="reserve-section">
+                <h3>Rolling Reserve</h3>
+                <table class="result-table">
+                  <tr><td>Capture Timeframe</td><td id="rrDays">—</td></tr>
+                  <tr><td>Rolling Reserve %</td><td id="rrPct">—</td></tr>
+                  <tr><td>Daily Capture (USD)</td><td id="rrDaily">—</td></tr>
+                  <tr><td>Full Timeframe Capture (USD)</td><td id="rrFull">—</td></tr>
+                </table>
+              </div>
+              <div class="reserve-section">
+                <h3>Fixed Reserve</h3>
+                <table class="result-table">
+                  <tr><td>Total Fixed Reserve (USD)</td><td id="fixedTotal">—</td></tr>
+                  <tr><td>Tranche 1</td><td id="fixedT1">—</td></tr>
+                  <tr><td>Tranche 2</td><td id="fixedT2">—</td></tr>
+                  <tr><td>Tranche 3</td><td id="fixedT3">—</td></tr>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Risk-Reward -->
+          <div class="result-card">
+            <h2 class="card-title">Risk–Reward Analysis</h2>
+            <table class="result-table">
+              <tr><td>Total Exposure</td><td id="rraTotalExposure">—</td></tr>
+              <tr><td>Exposure Coverage %</td><td id="rraCoverage">—</td></tr>
+              <tr><td>Annual Net Revenue</td><td id="rraNetRev">—</td></tr>
+              <tr><td>Break-Even Time</td><td id="rraBet">—</td></tr>
+            </table>
+          </div>
+
+          <!-- Peak Exposure Chart -->
+          <div class="result-card">
+            <h2 class="card-title">Monthly Peak Exposure</h2>
+            <div class="chart-container">
+              <canvas id="peakChart"></canvas>
+            </div>
+          </div>
+
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
