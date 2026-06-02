@@ -24,42 +24,56 @@
             <label>Company Legal Name
               <input type="text" id="companyName" placeholder="Enter company name" />
             </label>
-            <label>Annual Processing Volume (APV) USD
+            <label class="required-field">Annual Processing Volume (USD) <span class="req-star">*</span>
               <input type="number" id="apv" placeholder="0" min="0" />
             </label>
-            <label>Annual Net Revenue USD
+            <label>Annual Net Revenue (USD)
               <input type="number" id="netRevenue" placeholder="0" min="0" />
             </label>
-            <label>High Transaction Value (HTV) USD
+            <label>High Transaction Value (USD)
               <input type="number" id="htv" placeholder="0" min="0" />
             </label>
-            <label>Average Transaction Value (ATV) USD
+            <label>Average Transaction Value (USD)
               <input type="number" id="atv" placeholder="0" min="0" />
             </label>
             <label>Refund Rate (%)
-              <input type="number" id="refundRate" placeholder="10" step="0.01" min="0" max="100" />
+              <input type="number" id="refundRate" placeholder="Default: 10%" step="0.01" min="0" max="100" />
             </label>
             <label>Chargeback Rate (%)
-              <input type="number" id="chargebackRate" placeholder="0.5" step="0.001" min="0" max="100" />
+              <input type="number" id="chargebackRate" placeholder="Default: 0.5%" step="0.001" min="0" max="100" />
             </label>
           </div>
         </div>
 
         <!-- MCC / Delivery -->
         <div class="card">
-          <h2 class="card-title">MCC &amp; Delivery Timeframe</h2>
-          <p class="hint">Up to 20 MCC codes. Percentages of APV must sum to 100%.</p>
-          <div id="mccRows">
+          <h2 class="card-title">MCC &amp; Delivery Timeframe <span class="req-star">*</span></h2>
+          <p class="hint">Percentage of Annual Processing Volume must sum to 100%.</p>
+
+<div id="mccRows">
             <!-- rows injected by JS -->
           </div>
           <button class="btn-secondary" id="addMccRow">+ Add MCC</button>
-          <div id="mccSumError" class="error-msg hidden">APV % must sum to exactly 100%</div>
+          <div id="mccSumError" class="error-msg hidden">Percentage of Annual Processing Volume must sum to exactly 100%</div>
         </div>
 
         <!-- Monthly Processing -->
         <div class="card">
-          <h2 class="card-title">Monthly Processing Inputs (USD)</h2>
-          <p class="hint">Leave blank to distribute APV evenly across months.</p>
+          <h2 class="card-title">Monthly Processing Inputs</h2>
+          <div class="mode-toggle-row">
+            <span class="mode-toggle-label">Input mode:</span>
+            <label class="mode-option">
+              <input type="radio" name="monthlyMode" value="amount" checked /> USD Amount
+            </label>
+            <label class="mode-option">
+              <input type="radio" name="monthlyMode" value="percent" /> % of Annual Processing Volume
+            </label>
+          </div>
+          <p class="hint">Leave blank to distribute Annual Processing Volume evenly across months.</p>
+          <div class="monthly-col-headers">
+            <span></span><span></span>
+            <span class="monthly-computed-header" id="monthModeLabel"></span>
+          </div>
           <div class="monthly-grid" id="monthlyGrid">
             <!-- injected by JS -->
           </div>
@@ -156,6 +170,8 @@
 
       <!-- ── RIGHT COLUMN: OUTPUTS ── -->
       <section class="panel results-panel" id="resultsPanel">
+
+        <!-- Placeholder -->
         <div class="results-placeholder" id="resultsPlaceholder">
           <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect x="8" y="8" width="48" height="48" rx="4" stroke="#CBD5E1" stroke-width="2"/>
@@ -164,7 +180,26 @@
           <p>Fill in the inputs and click <strong>Calculate Exposure</strong></p>
         </div>
 
+        <!-- Validation errors -->
+        <div id="validationPanel" class="hidden">
+          <div class="validation-card">
+            <div class="validation-icon">⚠️</div>
+            <h2 class="validation-title">Required fields missing</h2>
+            <p class="validation-subtitle">Please complete the following before calculating:</p>
+            <ul id="validationList" class="validation-list"></ul>
+          </div>
+        </div>
+
+        <!-- Results -->
         <div id="resultsContent" class="hidden">
+
+          <!-- PDF download -->
+          <div class="pdf-download-row">
+            <button class="btn-pdf" id="downloadPdfBtn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download PDF
+            </button>
+          </div>
 
           <!-- Summary KPIs -->
           <div class="kpi-row">
@@ -173,12 +208,8 @@
               <span class="kpi-value" id="kpiTotalExposure">—</span>
             </div>
             <div class="kpi">
-              <span class="kpi-label">NDX (Weighted Avg Days)</span>
-              <span class="kpi-value" id="kpiNdx">—</span>
-            </div>
-            <div class="kpi">
-              <span class="kpi-label">Break-Even Time</span>
-              <span class="kpi-value" id="kpiBet">—</span>
+              <span class="kpi-label">Wtd. Avg. Delivery Days</span>
+              <span class="kpi-value" id="kpiWadd">—</span>
             </div>
             <div class="kpi">
               <span class="kpi-label">Rolling Reserve %</span>
@@ -223,17 +254,6 @@
             </div>
           </div>
 
-          <!-- Risk-Reward -->
-          <div class="result-card">
-            <h2 class="card-title">Risk–Reward Analysis</h2>
-            <table class="result-table">
-              <tr><td>Total Exposure</td><td id="rraTotalExposure">—</td></tr>
-              <tr><td>Exposure Coverage %</td><td id="rraCoverage">—</td></tr>
-              <tr><td>Annual Net Revenue</td><td id="rraNetRev">—</td></tr>
-              <tr><td>Break-Even Time</td><td id="rraBet">—</td></tr>
-            </table>
-          </div>
-
           <!-- Peak Exposure Chart -->
           <div class="result-card">
             <h2 class="card-title">Monthly Peak Exposure</h2>
@@ -248,6 +268,8 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

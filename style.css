@@ -145,13 +145,12 @@ input:checked + .slider::before { transform: translateX(18px); }
 /* ── MCC ROWS ── */
 .mcc-row {
   display: grid;
-  grid-template-columns: 130px 1fr 110px 90px 28px;
+  grid-template-columns: 90px 1fr 72px 72px 72px 64px 1fr 28px;
   gap: 6px;
-  align-items: end;
+  align-items: center;
   margin-bottom: 8px;
 }
 .mcc-row label { font-size: 11px; }
-.mcc-row:first-child .mcc-header { display: flex; }
 .mcc-col-header {
   font-size: 11px;
   font-weight: 600;
@@ -160,9 +159,36 @@ input:checked + .slider::before { transform: translateX(18px); }
 }
 .mcc-headers {
   display: grid;
-  grid-template-columns: 130px 1fr 110px 90px 28px;
+  grid-template-columns: 90px 1fr 72px 72px 72px 64px 1fr 28px;
   gap: 6px;
   margin-bottom: 4px;
+}
+/* ── RISK BADGES ── */
+.risk-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 4px;
+  white-space: nowrap;
+  min-height: 18px;
+  line-height: 1.2;
+  text-align: center;
+}
+.risk-low        { background: #DCFCE7; color: #15803D; }
+.risk-medium     { background: #FEF3C7; color: #B45309; }
+.risk-high       { background: #FEE2E2; color: #B91C1C; }
+.risk-very-high  { background: #EDE9FE; color: #6D28D9; }
+.risk-restricted { background: #FFEDD5; color: #9A3412; }
+.risk-prohibited { background: #450A0A; color: #FECACA; }
+.mcc-risk-cell  { display: flex; align-items: center; min-height: 32px; }
+.input-readonly {
+  background: #F1F5F9 !important;
+  color: var(--muted) !important;
+  cursor: default;
+  font-style: italic;
 }
 .btn-remove {
   background: none;
@@ -177,24 +203,71 @@ input:checked + .slider::before { transform: translateX(18px); }
 }
 .btn-remove:hover { background: #FEF2F2; }
 
+input.mcc-matched { border-color: var(--success) !important; background: #F0FDF4 !important; }
+input.mcc-unmatched { border-color: var(--warning) !important; background: #FFFBEB !important; }
+
+/* ── MONTHLY MODE TOGGLE ── */
+.mode-toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+.mode-toggle-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.mode-option {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+  font-weight: 500;
+}
+.mode-option input[type=radio] { accent-color: var(--accent); cursor: pointer; }
+
 /* ── MONTHLY GRID ── */
+.monthly-col-headers {
+  display: grid;
+  grid-template-columns: 90px 1fr 110px;
+  gap: 8px;
+  margin-bottom: 2px;
+  padding: 0 2px;
+}
+.monthly-computed-header {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  text-align: right;
+}
 .monthly-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: 6px 16px;
 }
 .monthly-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 90px 1fr 110px;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
-.monthly-row span {
+.month-label {
   font-size: 12px;
   color: var(--muted);
-  width: 70px;
-  flex-shrink: 0;
+  white-space: nowrap;
 }
-.monthly-row input { flex: 1; }
+.month-input { width: 100%; }
+.month-computed {
+  font-size: 12px;
+  color: var(--success);
+  font-weight: 600;
+  text-align: right;
+  white-space: nowrap;
+}
 .monthly-total-row {
   display: flex;
   justify-content: space-between;
@@ -272,6 +345,53 @@ input:checked + .slider::before { transform: translateX(18px); }
 /* ── RESULTS PANEL ── */
 .results-panel { position: sticky; top: 24px; }
 
+/* ── Required field star ── */
+.req-star { color: var(--danger); margin-left: 2px; }
+
+/* ── Validation panel ── */
+.validation-card {
+  background: #FFF7ED;
+  border: 1px solid #FED7AA;
+  border-radius: var(--radius);
+  padding: 28px 28px 24px;
+  box-shadow: var(--shadow);
+}
+.validation-icon { font-size: 28px; margin-bottom: 10px; }
+.validation-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #92400E;
+  margin-bottom: 6px;
+}
+.validation-subtitle {
+  font-size: 13px;
+  color: #B45309;
+  margin-bottom: 14px;
+}
+.validation-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.validation-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  color: #78350F;
+  background: #FFEDD5;
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+.validation-list li::before {
+  content: '•';
+  color: #F97316;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
 .results-placeholder {
   background: var(--surface);
   border: 2px dashed var(--border);
@@ -296,10 +416,32 @@ input:checked + .slider::before { transform: translateX(18px); }
   margin-bottom: 16px;
 }
 
+/* ── PDF DOWNLOAD ROW ── */
+.pdf-download-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+.btn-pdf {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  color: var(--accent);
+  border: 1.5px solid var(--accent);
+  border-radius: 8px;
+  padding: 7px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s;
+}
+.btn-pdf:hover { background: var(--accent-light); }
+
 /* ── KPI ROW ── */
 .kpi-row {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 12px;
   margin-bottom: 16px;
 }
@@ -363,6 +505,36 @@ input:checked + .slider::before { transform: translateX(18px); }
 
 /* ── CHART ── */
 .chart-container { height: 200px; position: relative; }
+
+/* ── RISK IMPORT BAR ── */
+.risk-import-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 12px;
+  background: #F8FAFC;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 12px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.risk-import-status {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.risk-import-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.risk-dot-inactive { background: #CBD5E1; }
+.risk-dot-active   { background: var(--success); }
+.risk-import-btn   { cursor: pointer; margin-top: 0; }
 
 /* ── HELPERS ── */
 .hidden { display: none !important; }
