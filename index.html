@@ -60,26 +60,37 @@
         <!-- Monthly Processing -->
         <div class="card">
           <h2 class="card-title">Monthly Processing Inputs</h2>
-          <div class="mode-toggle-row">
-            <span class="mode-toggle-label">Input mode:</span>
-            <label class="mode-option">
-              <input type="radio" name="monthlyMode" value="amount" checked /> USD Amount
+          <div class="toggle-row">
+            <label class="toggle-label">
+              <span>Specify monthly volumes</span>
+              <label class="switch">
+                <input type="checkbox" id="monthlyEnabled" />
+                <span class="slider"></span>
+              </label>
             </label>
-            <label class="mode-option">
-              <input type="radio" name="monthlyMode" value="percent" /> % of Annual Processing Volume
-            </label>
           </div>
-          <p class="hint">Leave blank to distribute Annual Processing Volume evenly across months.</p>
-          <div class="monthly-col-headers">
-            <span></span><span></span>
-            <span class="monthly-computed-header" id="monthModeLabel"></span>
-          </div>
-          <div class="monthly-grid" id="monthlyGrid">
-            <!-- injected by JS -->
-          </div>
-          <div class="monthly-total-row">
-            <span>Total</span>
-            <span id="monthlyTotal">$0</span>
+          <div id="monthlyFields" class="hidden">
+            <div class="mode-toggle-row">
+              <span class="mode-toggle-label">Input mode:</span>
+              <label class="mode-option">
+                <input type="radio" name="monthlyMode" value="amount" checked /> USD Amount
+              </label>
+              <label class="mode-option">
+                <input type="radio" name="monthlyMode" value="percent" /> % of Annual Processing Volume
+              </label>
+            </div>
+            <p class="hint">Leave blank to distribute Annual Processing Volume evenly across months.</p>
+            <div class="monthly-col-headers">
+              <span></span><span></span>
+              <span class="monthly-computed-header" id="monthModeLabel"></span>
+            </div>
+            <div class="monthly-grid" id="monthlyGrid">
+              <!-- injected by JS -->
+            </div>
+            <div class="monthly-total-row">
+              <span>Total</span>
+              <span id="monthlyTotal">$0</span>
+            </div>
           </div>
         </div>
 

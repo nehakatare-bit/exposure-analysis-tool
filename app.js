@@ -1121,34 +1121,52 @@ function generatePdf() {
     body: mccPdfBody,
     columnStyles: {
       0: { cellWidth: 16 },
-      2: { halign: 'right', cellWidth: 21 },
-      3: { halign: 'right', cellWidth: 24 },
+      1: { cellWidth: 52 },
+      2: { halign: 'right', cellWidth: 22 },
+      3: { halign: 'right', cellWidth: 25 },
       4: { halign: 'right', cellWidth: 20 },
+      5: { cellWidth: 47 },
     },
   });
   y = doc.lastAutoTable.finalY + 7;
 
-  // ── Monthly Processing (only if any values entered) ──
-  const anyMonthly = MONTHS.some(m => document.getElementById(`month${m}`)?.value?.trim() !== '');
-  if (anyMonthly) {
-    sectionHead('Monthly Processing');
-    doc.autoTable({
-      startY: y, margin: { left: M, right: M },
-      theme: 'striped',
-      headStyles: { fillColor: [241, 245, 249], textColor: [100, 116, 139], fontStyle: 'bold', fontSize: 7 },
-      styles: { fontSize: 8, cellPadding: [1.5, 2] },
-      head: [['Month', 'Volume (USD)']],
-      body: MONTHS.map((m, i) => {
-        const raw = parseFloat(document.getElementById(`month${m}`)?.value);
-        const usd = (isNaN(raw) || raw === 0)
-          ? apv / 12
-          : (monthlyMode === 'percent' ? (raw / 100) * apv : raw);
-        const auto = (isNaN(raw) || raw === 0) ? ' (auto)' : '';
-        return [m, fmt(usd) + auto];
-      }),
-      columnStyles: { 1: { halign: 'right' } },
-    });
-    y = doc.lastAutoTable.finalY + 7;
+  // ── Monthly Processing ──
+  sectionHead('Monthly Processing');
+  const monthlyToggleOn = document.getElementById('monthlyEnabled')?.checked;
+  if (!monthlyToggleOn) {
+    doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(100, 116, 139);
+    doc.text('Monthly inputs disabled — APV distributed evenly across all 12 months.', M, y);
+    doc.setTextColor(30, 41, 59);
+    y += 8;
+  } else {
+    const anyMonthly = MONTHS.some(m => document.getElementById(`month${m}`)?.value?.trim() !== '');
+    if (anyMonthly) {
+      doc.autoTable({
+        startY: y, margin: { left: M, right: M },
+        theme: 'striped',
+        headStyles: { fillColor: [241, 245, 249], textColor: [100, 116, 139], fontStyle: 'bold', fontSize: 7 },
+        styles: { fontSize: 8, cellPadding: [1.5, 2] },
+        head: [['Month', 'Volume (USD)']],
+        body: MONTHS.map(m => {
+          const raw = parseFloat((document.getElementById(`month${m}`)?.value || '').replace(/,/g, ''));
+          const usd = (isNaN(raw) || raw === 0)
+            ? apv / 12
+            : (monthlyMode === 'percent' ? (raw / 100) * apv : raw);
+          const auto = (isNaN(raw) || raw === 0) ? ' (auto)' : '';
+          return [m, fmt(usd) + auto];
+        }),
+        columnStyles: {
+          0: { cellWidth: 40 },
+          1: { halign: 'right' },
+        },
+      });
+      y = doc.lastAutoTable.finalY + 7;
+    } else {
+      doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(100, 116, 139);
+      doc.text('No monthly overrides entered — APV distributed evenly across all 12 months.', M, y);
+      doc.setTextColor(30, 41, 59);
+      y += 8;
+    }
   }
 
   // ── Exposure Results ──
@@ -1206,6 +1224,7 @@ function generatePdf() {
     body: bkBody,
     foot: [['TOTAL EXPOSURE', '—', '—', r.totalExposure === 'ERROR' ? 'ERROR' : fmt(r.totalExposure)]],
     footStyles: { fontStyle: 'bold', fillColor: [239,246,255], textColor: [30,41,59] },
+    showFoot: 'lastPage',
     columnStyles: {
       0: { halign: 'left', overflow: 'linebreak' },
       1: { halign: 'right', cellWidth: 22 },
@@ -1477,6 +1496,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('payfacEnabled').addEventListener('change', e => {
     document.getElementById('payfacFields').classList.toggle('hidden', !e.target.checked);
+  });
+
+  document.getElementById('monthlyEnabled').addEventListener('change', e => {
+    const on = e.target.checked;
+    document.getElementById('monthlyFields').classList.toggle('hidden', !on);
+    if (!on) {
+      // Clear values so they don't affect calculation when toggle is off
+      MONTHS.forEach(m => { const inp = document.getElementById(`month${m}`); if (inp) inp.value = ''; });
+      updateMonthlyTotal();
+    }
   });
 
   document.getElementById('calcBtn').addEventListener('click', () => {
