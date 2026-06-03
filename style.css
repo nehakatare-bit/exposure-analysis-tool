@@ -39,13 +39,13 @@ body {
 
 .content {
   display: grid;
-  grid-template-columns: 480px 1fr;
+  grid-template-columns: 740px 1fr;
   gap: 24px;
   padding: 24px 32px;
   align-items: start;
 }
 
-@media (max-width: 1000px) {
+@media (max-width: 1200px) {
   .content { grid-template-columns: 1fr; }
 }
 
@@ -145,7 +145,7 @@ input:checked + .slider::before { transform: translateX(18px); }
 /* ── MCC ROWS ── */
 .mcc-row {
   display: grid;
-  grid-template-columns: 90px 1fr 72px 72px 72px 64px 1fr 28px;
+  grid-template-columns: 80px 1fr 88px 64px 64px 56px 1fr 28px;
   gap: 6px;
   align-items: center;
   margin-bottom: 8px;
@@ -159,7 +159,7 @@ input:checked + .slider::before { transform: translateX(18px); }
 }
 .mcc-headers {
   display: grid;
-  grid-template-columns: 90px 1fr 72px 72px 72px 64px 1fr 28px;
+  grid-template-columns: 80px 1fr 88px 64px 64px 56px 1fr 28px;
   gap: 6px;
   margin-bottom: 4px;
 }
@@ -343,7 +343,11 @@ input.mcc-unmatched { border-color: var(--warning) !important; background: #FFFB
 }
 
 /* ── RESULTS PANEL ── */
-.results-panel { position: sticky; top: 24px; }
+.results-panel { position: sticky; top: 24px; min-width: 0; }
+
+@media (max-width: 1200px) {
+  .results-panel { position: static; }
+}
 
 /* ── Required field star ── */
 .req-star { color: var(--danger); margin-left: 2px; }
