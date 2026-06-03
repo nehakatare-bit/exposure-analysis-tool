@@ -736,7 +736,7 @@ function buildMonthlyGrid() {
     div.className = 'monthly-row';
     div.innerHTML = `
       <span class="month-label">${m}</span>
-      <input type="number" id="month${m}" placeholder="Auto" min="0" class="month-input" />
+      <input type="text" inputmode="numeric" id="month${m}" placeholder="Leave blank for auto" class="month-input" />
       <span class="month-computed" id="monthComputed${m}"></span>`;
     grid.appendChild(div);
     div.querySelector('input').addEventListener('input', updateMonthlyTotal);
@@ -745,20 +745,11 @@ function buildMonthlyGrid() {
 
 function setMonthlyMode(mode) {
   monthlyMode = mode;
-  const apv = parseFloat(document.getElementById('apv').value) || 0;
   MONTHS.forEach(m => {
     const inp = document.getElementById(`month${m}`);
     inp.value = '';
     inp.dataset.manualEdit = '';
-    if (mode === 'percent') {
-      inp.placeholder = 'e.g. 8.33';
-      inp.step = '0.01';
-      inp.max = '100';
-    } else {
-      inp.placeholder = 'Leave blank for auto';
-      inp.step = 'any';
-      inp.removeAttribute('max');
-    }
+    inp.placeholder = mode === 'percent' ? 'e.g. 8.33' : 'Leave blank for auto';
   });
   document.getElementById('monthModeLabel').textContent =
     mode === 'percent' ? 'Computed (USD)' : '';
@@ -766,10 +757,10 @@ function setMonthlyMode(mode) {
 }
 
 function updateMonthlyTotal() {
-  const apv = parseFloat(document.getElementById('apv').value) || 0;
+  const apv = getNumVal('apv');
   let total = 0;
   MONTHS.forEach(m => {
-    const raw = parseFloat(document.getElementById(`month${m}`)?.value);
+    const raw = parseFloat((document.getElementById(`month${m}`)?.value || '').replace(/,/g, ''));
     const computed = document.getElementById(`monthComputed${m}`);
     if (monthlyMode === 'percent') {
       const usd = !isNaN(raw) && raw > 0 ? (raw / 100) * apv : 0;
@@ -785,7 +776,7 @@ function updateMonthlyTotal() {
 
 function getMonthlyValues(apv) {
   return MONTHS.map(m => {
-    const raw = parseFloat(document.getElementById(`month${m}`)?.value);
+    const raw = parseFloat((document.getElementById(`month${m}`)?.value || '').replace(/,/g, ''));
     if (isNaN(raw) || raw === 0) return apv / 12;
     return monthlyMode === 'percent' ? (raw / 100) * apv : raw;
   });
@@ -802,6 +793,39 @@ function fmtPct(n) {
 }
 function ceiling(n, sig) { return Math.ceil(n / sig) * sig; }
 function mround(n, multiple) { return Math.round(n / multiple) * multiple; }
+
+// Strip commas and return a float — works for both type=number and type=text currency inputs
+function getNumVal(id) {
+  const el = document.getElementById(id);
+  if (!el) return 0;
+  return parseFloat((el.value || '').replace(/,/g, '')) || 0;
+}
+
+// Attach live comma-formatting to a text input (currency fields only)
+function attachCurrencyInput(el) {
+  if (!el) return;
+  el.addEventListener('input', function () {
+    // In percent mode, monthly inputs show decimals — skip formatting
+    if (this.classList.contains('month-input') && monthlyMode === 'percent') return;
+    const pos    = this.selectionStart;
+    const raw    = this.value.replace(/\D/g, '');
+    if (!raw) { this.value = ''; return; }
+    // Count digits before cursor in the current (partially typed) string
+    const digitsBeforeCursor = this.value.slice(0, pos).replace(/\D/g, '').length;
+    const formatted = Number(raw).toLocaleString('en-US');
+    this.value = formatted;
+    // Reposition cursor so it stays at the same logical digit
+    let count = 0, newPos = formatted.length;
+    for (let i = 0; i < formatted.length; i++) {
+      if (/\d/.test(formatted[i])) {
+        count++;
+        if (count === digitsBeforeCursor) { newPos = i + 1; break; }
+      }
+    }
+    if (digitsBeforeCursor === 0) newPos = 0;
+    this.setSelectionRange(newPos, newPos);
+  });
+}
 
 // ── Peak exposure (sliding window) ───────────────────────────────────────────
 function calcPeakMonthly(monthlyVols, ndxDays, isAch, achPct) {
@@ -831,8 +855,8 @@ function calcPeakMonthly(monthlyVols, ndxDays, isAch, achPct) {
 
 // ── Core calculation ──────────────────────────────────────────────────────────
 function calculate() {
-  const apv            = parseFloat(document.getElementById('apv').value) || 0;
-  const netRevenue     = parseFloat(document.getElementById('netRevenue').value) || 0;
+  const apv            = getNumVal('apv');
+  const netRevenue     = getNumVal('netRevenue');
   const refundRateRaw  = document.getElementById('refundRate').value;
   const cbRateRaw      = document.getElementById('chargebackRate').value;
   const refundRate     = refundRateRaw === '' ? 0.10 : parseFloat(refundRateRaw) / 100;
@@ -928,7 +952,7 @@ function calculate() {
     const subSettleDays = parseFloat(document.getElementById('subSettleDays').value) || 0;
     const subRRRate     = (parseFloat(document.getElementById('subRRRate').value) || 0) / 100;
     const subRRWeeks    = parseFloat(document.getElementById('subRRWeeks').value) || 0;
-    const subFixed      = parseFloat(document.getElementById('subFixedReserve').value) || 0;
+    const subFixed      = getNumVal('subFixedReserve');
     const discRate      = (parseFloat(document.getElementById('discountRate').value) || 0) / 100;
     const subMerchConc  = document.getElementById('subMerchantConc').value === 'Yes';
 
@@ -937,9 +961,9 @@ function calculate() {
       + subFixed;
 
     if (subMerchConc) {
-      const sm1vol  = parseFloat(document.getElementById('sm1Vol').value) || 0;
+      const sm1vol  = getNumVal('sm1Vol');
       const sm1days = parseFloat(document.getElementById('sm1Days').value) || 0;
-      const sm2vol  = parseFloat(document.getElementById('sm2Vol').value) || 0;
+      const sm2vol  = getNumVal('sm2Vol');
       const sm2days = parseFloat(document.getElementById('sm2Days').value) || 0;
       payfacConc = sm1vol * sm1days / 365 + sm2vol * sm2days / 365;
     }
@@ -1051,10 +1075,10 @@ function generatePdf() {
 
   // ── Processing Details ──
   sectionHead('Processing Details');
-  const apv        = parseFloat(document.getElementById('apv').value) || 0;
-  const netRev     = parseFloat(document.getElementById('netRevenue').value) || 0;
-  const htv        = parseFloat(document.getElementById('htv').value) || 0;
-  const atv        = parseFloat(document.getElementById('atv').value) || 0;
+  const apv        = getNumVal('apv');
+  const netRev     = getNumVal('netRevenue');
+  const htv        = getNumVal('htv');
+  const atv        = getNumVal('atv');
   const rRefund    = document.getElementById('refundRate').value;
   const rCb        = document.getElementById('chargebackRate').value;
   kvTable([
@@ -1353,7 +1377,7 @@ function renderChart(peakMonthly) {
 // ── Validation ───────────────────────────────────────────────────────────────
 function validateInputs() {
   const errors = [];
-  const apv = parseFloat(document.getElementById('apv').value);
+  const apv = getNumVal('apv');
   if (!apv || apv <= 0) errors.push('Annual Processing Volume (USD) is required');
 
   const mccRows = getMccRows();
@@ -1376,7 +1400,7 @@ function validateInputs() {
     const allFilled = allMonthlyRaw.every(v => v !== '');
     if (allFilled) {
       const monthlyUsd = allMonthlyRaw.map(v => {
-        const raw = parseFloat(v) || 0;
+        const raw = parseFloat((v || '').replace(/,/g, '')) || 0;
         return monthlyMode === 'percent' ? (raw / 100) * apv : raw;
       });
       const monthlyTotal = monthlyUsd.reduce((a, b) => a + b, 0);
@@ -1412,6 +1436,12 @@ document.addEventListener('DOMContentLoaded', () => {
   addMccRow(); // start with one MCC row
   buildMonthlyGrid();
   updateImportStatus();
+
+  // Attach comma-formatting to all currency (dollar) inputs
+  ['apv', 'netRevenue', 'htv', 'atv', 'sm1Vol', 'sm2Vol', 'subFixedReserve'].forEach(id => {
+    attachCurrencyInput(document.getElementById(id));
+  });
+  MONTHS.forEach(m => attachCurrencyInput(document.getElementById(`month${m}`)));
 
   // Wire up CSV import button
   const riskInput = document.getElementById('riskCsvInput');
@@ -1461,4 +1491,11 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('downloadPdfBtn').addEventListener('click', generatePdf);
+
+  // Enter key triggers Calculate Exposure from any input field
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    if (e.target.tagName === 'BUTTON' || e.target.tagName === 'TEXTAREA') return;
+    document.getElementById('calcBtn').click();
+  });
 });

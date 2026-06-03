@@ -25,16 +25,16 @@
               <input type="text" id="companyName" placeholder="Enter company name" />
             </label>
             <label class="required-field">Annual Processing Volume (USD) <span class="req-star">*</span>
-              <input type="number" id="apv" placeholder="0" min="0" />
+              <input type="text" inputmode="numeric" id="apv" placeholder="e.g. 10,000,000" />
             </label>
             <label>Annual Net Revenue (USD)
-              <input type="number" id="netRevenue" placeholder="0" min="0" />
+              <input type="text" inputmode="numeric" id="netRevenue" placeholder="0" />
             </label>
             <label>High Transaction Value (USD)
-              <input type="number" id="htv" placeholder="0" min="0" />
+              <input type="text" inputmode="numeric" id="htv" placeholder="0" />
             </label>
             <label>Average Transaction Value (USD)
-              <input type="number" id="atv" placeholder="0" min="0" />
+              <input type="text" inputmode="numeric" id="atv" placeholder="0" />
             </label>
             <label>Refund Rate (%)
               <input type="number" id="refundRate" placeholder="Default: 10%" step="0.01" min="0" max="100" />
@@ -113,7 +113,7 @@
                 <input type="number" id="subRRWeeks" placeholder="0" min="0" />
               </label>
               <label>Fixed Reserve Held from Sub-merchants (USD)
-                <input type="number" id="subFixedReserve" placeholder="0" min="0" />
+                <input type="text" inputmode="numeric" id="subFixedReserve" placeholder="0" />
               </label>
               <label>Discount Rate (%)
                 <input type="number" id="discountRate" placeholder="0" step="0.1" min="0" />
@@ -129,13 +129,13 @@
                 <tr>
                   <td><input type="text" id="sm1Name" placeholder="Merchant 1" /></td>
                   <td><input type="text" id="sm1Desc" /></td>
-                  <td><input type="number" id="sm1Vol" placeholder="0" min="0" /></td>
+                  <td><input type="text" inputmode="numeric" id="sm1Vol" placeholder="0" /></td>
                   <td><input type="number" id="sm1Days" placeholder="0" min="0" /></td>
                 </tr>
                 <tr>
                   <td><input type="text" id="sm2Name" placeholder="Merchant 2" /></td>
                   <td><input type="text" id="sm2Desc" /></td>
-                  <td><input type="number" id="sm2Vol" placeholder="0" min="0" /></td>
+                  <td><input type="text" inputmode="numeric" id="sm2Vol" placeholder="0" /></td>
                   <td><input type="number" id="sm2Days" placeholder="0" min="0" /></td>
                 </tr>
               </tbody>
