@@ -1127,6 +1127,12 @@ function generatePdf() {
       4: { halign: 'right', cellWidth: 20 },
       5: { cellWidth: 47 },
     },
+    didParseCell: function(data) {
+      // columnStyles.halign doesn't reliably apply to head cells — force it here
+      if (data.section === 'head' && (data.column.index === 2 || data.column.index === 3 || data.column.index === 4)) {
+        data.cell.styles.halign = 'right';
+      }
+    },
   });
   y = doc.lastAutoTable.finalY + 7;
 
@@ -1230,6 +1236,12 @@ function generatePdf() {
       1: { halign: 'right', cellWidth: 22 },
       2: { halign: 'right', cellWidth: 22 },
       3: { halign: 'right', cellWidth: 32 },
+    },
+    didParseCell: function(data) {
+      // Force right-align on head and foot for columns 1-3 (Days, Rate, Exposure)
+      if ((data.section === 'head' || data.section === 'foot') && data.column.index > 0) {
+        data.cell.styles.halign = 'right';
+      }
     },
   });
   y = doc.lastAutoTable.finalY + 7;
