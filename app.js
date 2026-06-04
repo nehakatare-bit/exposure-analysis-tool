@@ -1023,6 +1023,22 @@ function calculate() {
   };
 }
 
+// ── Looker ───────────────────────────────────────────────────────────────────
+const LOOKER_LOOK_URL = 'https://checkoutinternal.eu.looker.com/looks/6812';
+const LOOKER_FILTER   = 'NAS+Client+Name';
+
+function openLooker() {
+  const name = document.getElementById('companyName').value.trim();
+  if (!name) {
+    alert('Enter a Company Legal Name first so Looker can filter by it.');
+    return;
+  }
+  // Use Looker's % wildcard (URL-encoded as %25) for a "contains" match,
+  // so partial names and subsidiaries are still found.
+  const filterValue = '%25' + encodeURIComponent(name) + '%25';
+  window.open(`${LOOKER_LOOK_URL}?${LOOKER_FILTER}=${filterValue}`, '_blank');
+}
+
 // ── PDF Export ───────────────────────────────────────────────────────────────
 function generatePdf() {
   if (!lastResult) return;
@@ -1532,6 +1548,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('downloadPdfBtn').addEventListener('click', generatePdf);
+  document.getElementById('openLookerBtn').addEventListener('click', openLooker);
 
   // Enter key triggers Calculate Exposure from any input field
   document.addEventListener('keydown', e => {
